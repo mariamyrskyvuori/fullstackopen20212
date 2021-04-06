@@ -6,6 +6,7 @@ morgan.token('type', function (req, res) {
     return req.headers['content-type']
 })
 const app = express()
+app.use(express.static('build'))
 app.use(cors())
 app.use(express.json())
 morgan.token('person', (request, response) => {
