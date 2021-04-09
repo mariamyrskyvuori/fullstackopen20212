@@ -1,6 +1,31 @@
 const express = require('express')
 const cors = require('cors')
 
+const mongoose = require('mongoose')
+
+if (process.argv.length<3) {
+    console.log('give password as argument')
+    process.exit(1)
+}
+
+const password = process.argv[2]
+const name = process.argv[3]
+const number = process.argv[4]
+
+const url =
+    `mongodb+srv://fullstack2021:${password}@cluster0.ezdss.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
+
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
+
+const personSchema = new mongoose.Schema({
+    name: String,
+    number: String,
+})
+
+
+const Person = mongoose.model('Person', personSchema)
+
+
 let morgan = require('morgan')
 morgan.token('type', function (req, res) {
     return req.headers['content-type']
@@ -19,32 +44,13 @@ app.use(morgan('tiny'))
 const time = new Date().toLocaleString()
 
 
-let persons = [
-    {
-        id: 1,
-        name: "Arto Hellas",
-        number: "040-123456",
-    },
-    {
-        id: 2,
-        name: "Ada Lovelace",
-        number: "39-44-5323523",
-    },
-    {
-        id: 3,
-        name: "Dan Abramov",
-        number: "12-43-234345",
-    },
-    {
-        id: 4,
-        name: "Mary Poppendick",
-        number: "39-23-6423122",
-    }
-]
 
 
-app.get('/api/persons', (req, res) => {
-    res.json(persons)
+
+app.get('/api/persons', (req, response) => {
+    Person.find({}).then(persons => {
+        response.json(persons)
+    })
 })
 
 app.get('/info', (req, res) => {
