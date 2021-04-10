@@ -40,7 +40,7 @@ app.put('/api/persons/:id', (request, response, next) => {
         number: body.number,
     }
 
-    Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    Person.findByIdAndUpdate(request.params.id, person, {new: true})
         .then(updatedPerson => {
             response.json(updatedPerson)
         })
@@ -48,10 +48,9 @@ app.put('/api/persons/:id', (request, response, next) => {
 })
 
 app.get('/info', (req, res) => {
-    /*Person.find({}).then(person => {
-        response.json(person)
-    })*/
-    res.send(`<p>Phonebook has info for ${Person.count()} persons</p> <p>${time}</p>`)
+    Person.count({}, function (err, count) {
+        res.send(`<p>Phonebook has info for ${count} persons</p> <p>${time}</p>`)
+    })
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -74,7 +73,6 @@ app.delete('/api/persons/:id', (request, response) => {
 })
 
 
-
 /*
 const isNotUnique = (name) => {
     return !!persons.find(person => {
@@ -91,12 +89,6 @@ app.post('/api/persons', (request, response) => {
             error: 'name or number missing'
         })
     }
-    /*
-    if (isNotUnique(body.name)) {
-        return response.status(400).json({
-            error: 'name must be unique'
-        })
-    }*/
 
     const person = new Person({
         name: body.name,
@@ -105,11 +97,13 @@ app.post('/api/persons', (request, response) => {
 
     person.save().then(savedPerson => {
         response.json(savedPerson)
+    }).catch(function (err) {
+        response.status(400).json(err)
     })
 })
 
 const unknownEndpoint = (request, response) => {
-    response.status(404).send({ error: 'unknown endpoint' })
+    response.status(404).send({error: 'unknown endpoint'})
 }
 
 // olemattomien osoitteiden käsittely
@@ -119,7 +113,7 @@ const errorHandler = (error, request, response, next) => {
     console.error(error.message)
 
     if (error.name === 'CastError') {
-        return response.status(400).send({ error: 'malformatted id' })
+        return response.status(400).send({error: 'malformatted id'})
     }
 
     next(error)
