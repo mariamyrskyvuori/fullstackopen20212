@@ -32,31 +32,48 @@ app.get('/api/persons', (req, response) => {
         response.json(person)
     })
 })
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
 
+    const person = {
+        name: body.name,
+        number: body.number,
+    }
 
-/*app.get('/info', (req, res) => {
-    res.send(`<p>Phonebook has info for ${persons.length} persons</p> <p>${time}</p>`)
-})*/
-
-app.get('/api/persons/:id', (request, response) => {
-    /*if (!person) {
-        return response.status(404).json({
-            error: 'contact does not exist'
+    Person.findByIdAndUpdate(request.params.id, person, { new: true })
+        .then(updatedPerson => {
+            response.json(updatedPerson)
         })
-    }*/
-    Person.findById(request.params.id).then(person => {
-        response.json(person)
-    })
+        .catch(error => next(error))
+})
 
+app.get('/info', (req, res) => {
+    /*Person.find({}).then(person => {
+        response.json(person)
+    })*/
+    res.send(`<p>Phonebook has info for ${Person.count()} persons</p> <p>${time}</p>`)
+})
+
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+        .then(person => {
+            if (person) {
+                response.json(person)
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-    Person.deleteOne(request.params.id).then(person => {
-        response.json(person)
+    Person.findByIdAndDelete(request.params.id).then(result => {
+        response.status(204).end()
     })
-
-    response.status(204).end()
+        .catch(error => next(error))
 })
+
+
 
 /*
 const isNotUnique = (name) => {
@@ -90,6 +107,26 @@ app.post('/api/persons', (request, response) => {
         response.json(savedPerson)
     })
 })
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+
+// olemattomien osoitteiden käsittely
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+
+    next(error)
+}
+
+// tämä tulee kaikkien muiden middlewarejen rekisteröinnin jälkeen!
+app.use(errorHandler)
 
 
 
